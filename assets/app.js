@@ -3,7 +3,7 @@
    แก้ค่า API ด้านล่างเพียงจุดเดียว ทุกหน้าจะเปลี่ยนตามทั้งหมด
 ------------------------------------------------------------------ */
 
-var API = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+var API = "https://script.google.com/macros/s/AKfycbwAVB7h7ZvtarZ6go-FZIsAxl_HRPkdGFLQ91pOGaXMcylmbZSeNsXttXYo63ySopbn2w/exec";
 
 var DISTRICTS = [
   "เมืองสมุทรปราการ", "พระประแดง", "พระสมุทรเจดีย์",
