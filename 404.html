@@ -124,12 +124,20 @@ button:disabled{background:#C9CCD2;cursor:not-allowed}
    แก้ค่า API ด้านล่างเพียงจุดเดียว ทุกหน้าจะเปลี่ยนตามทั้งหมด
 ------------------------------------------------------------------ */
 
-var API = "https://script.google.com/macros/s/AKfycbwAVB7h7ZvtarZ6go-FZIsAxl_HRPkdGFLQ91pOGaXMcylmbZSeNsXttXYo63ySopbn2w/exec";
+var API = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 
-var DISTRICTS = [
-  "เมืองสมุทรปราการ", "พระประแดง", "พระสมุทรเจดีย์",
-  "บางพลี", "บางบ่อ", "บางเสาธง"
+/* รายการพื้นที่โหลดจากแท็บ Areas ตอนเปิดหน้า
+   เพิ่มจังหวัด/อำเภอในชีตแล้วหน้าเว็บอัปเดตเอง ไม่ต้องแก้โค้ด
+   ชุดด้านล่างเป็นตัวสำรองไว้ใช้เมื่อโหลดจากเซิร์ฟเวอร์ไม่ได้ */
+var AREAS_FALLBACK = [
+  { code: "A01", label: "บางบ่อ, สมุทรปราการ" },
+  { code: "A02", label: "บางพลี, สมุทรปราการ" },
+  { code: "A03", label: "บางเสาธง, สมุทรปราการ" },
+  { code: "A04", label: "พระประแดง, สมุทรปราการ" },
+  { code: "A05", label: "พระสมุทรเจดีย์, สมุทรปราการ" },
+  { code: "A06", label: "เมืองสมุทรปราการ, สมุทรปราการ" }
 ];
+var AREAS = AREAS_FALLBACK;
 
 var PACKAGES = [
   "เน็ตบ้านสุดคุ้ม (Combo Max)",
@@ -173,6 +181,26 @@ function opts(list) {
   }).join("");
 }
 
+function areaOpts() {
+  return AREAS.map(function (a) {
+    return '<option value="' + a.code + '">' + a.label + "</option>";
+  }).join("") + '<option value="OTHER">พื้นที่อื่น (ไม่อยู่ในรายการ)</option>';
+}
+
+/** เติมรายการพื้นที่ลง dropdown โดยไม่ทำให้ตัวเลือกที่ผู้ใช้เลือกไว้หาย */
+function fillAreaSelect(preferCode) {
+  var sel = $("district");
+  if (!sel) return;
+  var keep = sel.value;
+  sel.innerHTML = '<option value="">— เลือกพื้นที่ติดตั้ง —</option>' + areaOpts();
+  var want = keep || preferCode || "";
+  if (want) {
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === want) { sel.selectedIndex = i; break; }
+    }
+  }
+}
+
 function chips() {
   return CALL_TIMES.map(function (c) {
     return '<label class="chip"><input type="radio" name="preferred_call_time" value="' +
@@ -194,10 +222,10 @@ function renderForm(mountId) {
     '<div class="hint">เจ้าหน้าที่จะโทรกลับตามเบอร์นี้ กรุณากรอกให้ถูกต้อง</div>',
     '<div class="err">กรุณากรอกเบอร์มือถือ 10 หลัก ขึ้นต้นด้วย 0</div>',
 
-    '<label for="district">อำเภอที่จะติดตั้ง <span class="req">*</span></label>',
-    '<select id="district"><option value="">— เลือกอำเภอ —</option>' + opts(DISTRICTS) +
-    '<option value="อำเภออื่น / จังหวัดอื่น">อำเภออื่น / จังหวัดอื่น</option></select>',
-    '<div class="err">กรุณาเลือกอำเภอ</div>',
+    '<label for="district">พื้นที่ที่จะติดตั้ง <span class="req">*</span></label>',
+    '<select id="district"><option value="">— เลือกพื้นที่ติดตั้ง —</option>' + areaOpts() + "</select>",
+    '<div class="hint">เลือกอำเภอและจังหวัดที่จะติดตั้งจริง ไม่ใช่ที่ตั้งร้าน</div>',
+    '<div class="err">กรุณาเลือกพื้นที่ติดตั้ง</div>',
 
     '<label for="addr">ที่อยู่สำหรับติดตั้ง <span class="req">*</span></label>',
     '<textarea id="addr" placeholder="บ้านเลขที่ / หมู่ / ซอย / ถนน / ตำบล"></textarea>',
@@ -228,6 +256,15 @@ function renderForm(mountId) {
   ].join("");
 }
 
+/** แปลง area_code เป็นข้อความอ่านออก ใช้ตอนส่งข้อมูลและตอนแสดงผล */
+function areaLabel(code) {
+  if (!code || code === "OTHER") return "พื้นที่อื่น";
+  for (var i = 0; i < AREAS.length; i++) {
+    if (AREAS[i].code === code) return AREAS[i].label;
+  }
+  return code;
+}
+
 function markBad(el, bad) {
   var e = el;
   while (e && !(e.classList && e.classList.contains("err"))) e = e.nextElementSibling;
@@ -249,6 +286,19 @@ function initLanding() {
   var startedAt = Date.now();
 
   renderForm("formMount");
+
+  // ---- โหลดรายการพื้นที่จากชีต
+  if (API.indexOf("PASTE_") !== 0) {
+    fetch(API + "?action=areas")
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok && d.areas && d.areas.length) {
+          AREAS = d.areas;
+          fillAreaSelect();
+        }
+      })
+      .catch(function () { /* ใช้รายการสำรองต่อไป ผู้ใช้ยังกรอกได้ */ });
+  }
 
   // ---- แสดงชื่อร้าน
   var nameEl = $("shopName");
@@ -338,7 +388,8 @@ function initLanding() {
         qr_slug: SLUG,
         customer_name: $("name").value.trim(),
         phone: $("phone").value.trim(),
-        district: $("district").value,
+        area_code: $("district").value === "OTHER" ? "" : $("district").value,
+        district: areaLabel($("district").value),
         install_address: $("addr").value.trim(),
         package: $("pkg").value,
         preferred_call_time: t.value,
