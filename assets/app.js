@@ -19,12 +19,15 @@ var AREAS_FALLBACK = [
 var AREAS = AREAS_FALLBACK;
 
 var PACKAGES = [
-  "เน็ตบ้านสุดคุ้ม (Combo Max)",
-  "เน็ตบ้าน + กล่องทีวี",
-  "เน็ตบ้านอย่างเดียว",
-  "ย้ายค่าย/ย้ายบ้าน",
-  "ยังไม่แน่ใจ ขอคำแนะนำ"
+  "แพ็กเน็ตบ้านราคาประหยัด 499",
+  "แพ็กผู้ประกอบการ 699",
+  "สนใจสอบถามแพ็กเกจอื่น"
 ];
+
+/* รูปโปรโมชั่นที่แสดงเหนือช่องเลือกแพ็กเกจ
+   ไฟล์ต้องอยู่ที่ assets/promo.jpg ใน repo เดียวกัน
+   ตั้งเป็นค่าว่างถ้าไม่ต้องการแสดงรูป */
+var PROMO_IMAGE = "assets/promo.jpg";
 
 var CALL_TIMES = [
   { v: "เช้า (08:00-12:00)", a: "เช้า", b: "08:00-12:00" },
@@ -58,6 +61,15 @@ function opts(list) {
   return list.map(function (v) {
     return '<option value="' + v + '">' + v + "</option>";
   }).join("");
+}
+
+/** รูปโปรโมชั่น กดแล้วเปิดดูขนาดเต็มได้ เผื่อตัวหนังสือในรูปเล็กเกินไปบนมือถือ */
+function promoHtml() {
+  if (!PROMO_IMAGE) return "";
+  var src = baseUrl() + PROMO_IMAGE;
+  return '<a class="promo" href="' + src + '" target="_blank" rel="noopener">' +
+    '<img src="' + src + '" alt="โปรโมชั่นแพ็กเกจเน็ตบ้าน" loading="lazy">' +
+    '<span class="promo-tip">แตะที่รูปเพื่อดูขนาดเต็ม</span></a>';
 }
 
 function areaOpts() {
@@ -111,6 +123,7 @@ function renderForm(mountId) {
     '<div class="err">กรุณากรอกที่อยู่ติดตั้ง</div>',
 
     '<label for="pkg">แพ็กเกจที่สนใจ <span class="req">*</span></label>',
+    promoHtml(),
     '<select id="pkg"><option value="">— เลือกแพ็กเกจ —</option>' + opts(PACKAGES) + "</select>",
     '<div class="err">กรุณาเลือกแพ็กเกจ</div>',
 
