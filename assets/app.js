@@ -67,9 +67,10 @@ function opts(list) {
 function promoHtml() {
   if (!PROMO_IMAGE) return "";
   var src = baseUrl() + PROMO_IMAGE;
+  // แสดงเต็มภาพในหน้าเลย ไม่ต้องกดเปิดแท็บใหม่
+  // ยังกดได้อยู่เผื่อลูกค้าอยากซูมดูตัวหนังสือเล็ก ๆ
   return '<a class="promo" href="' + src + '" target="_blank" rel="noopener">' +
-    '<img src="' + src + '" alt="โปรโมชั่นแพ็กเกจเน็ตบ้าน" loading="lazy">' +
-    '<span class="promo-tip">แตะที่รูปเพื่อดูขนาดเต็ม</span></a>';
+    '<img src="' + src + '" alt="โปรโมชั่นแพ็กเกจเน็ตบ้าน"></a>';
 }
 
 function areaOpts() {
