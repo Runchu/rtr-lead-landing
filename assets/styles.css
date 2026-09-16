@@ -70,9 +70,8 @@ button:disabled{background:#C9CCD2;cursor:not-allowed}
 .codebox input{text-align:center;font-size:24px;letter-spacing:8px;font-weight:600;
   text-transform:uppercase;padding:14px}
 
+/* แสดงรูปโปรโมชั่นเต็มภาพ ไม่ครอบ ไม่จำกัดความสูง
+   ลูกค้าจะได้เห็นรายละเอียดแพ็กเกจครบโดยไม่ต้องกดเปิดแท็บใหม่ */
 .promo{display:block;margin:0 0 10px;border:1px solid var(--line);border-radius:10px;
   overflow:hidden;background:#fff;text-decoration:none}
-.promo img{display:block;width:100%;height:auto;max-height:340px;object-fit:cover;
-  object-position:top}
-.promo-tip{display:block;text-align:center;font-size:11.5px;color:var(--muted);
-  padding:6px 4px;background:var(--bg)}
+.promo img{display:block;width:100%;height:auto}
